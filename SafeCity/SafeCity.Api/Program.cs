@@ -8,6 +8,7 @@ using SafeCity.Api.Entity;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
 using SafeCity.Api.Utils;
+using Swashbuckle.AspNetCore.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -77,6 +78,7 @@ builder.Services.AddSwaggerGen(c =>
         Title = "SparksLifeBackend API",
         Version = "v1"
     });
+    c.OperationFilter<AppendAuthorizeToSummaryOperationFilter>();
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {

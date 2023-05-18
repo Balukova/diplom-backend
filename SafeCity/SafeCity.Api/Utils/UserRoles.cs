@@ -10,5 +10,6 @@ namespace SafeCity.Api.Utils
     {
         public const string Client = "Client";
         public const string Admin = "Admin";
+        public const string AdminClient = "Admin,Client";
     }
 }

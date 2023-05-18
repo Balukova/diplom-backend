@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SafeCity.Api.Data;
@@ -11,9 +12,11 @@ using SafeCity.Api.Data;
 namespace SafeCity.Api.Migrations
 {
     [DbContext(typeof(SafeCityContext))]
-    partial class SafeCityContextModelSnapshot : ModelSnapshot
+    [Migration("20230518212648_UpdateDb")]
+    partial class UpdateDb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
