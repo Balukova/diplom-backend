@@ -31,7 +31,7 @@ namespace SafeCity.Api.Controllers
 
             if (user == null)
             {
-                user = new AppUser { UserName = request.UserName };
+                user = new AppUser { UserName = request.UserName, FullName = request.FullName };
                 var createUserResult = await _userManager.CreateAsync(user, request.Password);
                 if (!createUserResult.Succeeded)
                 {
@@ -86,11 +86,11 @@ namespace SafeCity.Api.Controllers
                 authClaims.Add(new Claim(ClaimTypes.Role, userRole));
             }
 
-            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("SparksLifeBackend"));
+            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("SafeCityContextSafeCityContext"));
 
             var token = new JwtSecurityToken(
-                issuer: "SparksLifeBackend",
-                audience: "SparksLifeBackend",
+                issuer: "SafeCityContextSafeCityContext",
+                audience: "SafeCityContextSafeCityContext",
                 expires: DateTime.Now.AddHours(720),
                 claims: authClaims,
                 signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
@@ -101,15 +101,16 @@ namespace SafeCity.Api.Controllers
 
     }
 
-    public class CreateAccountRequest
+    public class CreateAccountRequest: LoginRequest
+    {
+
+        public string FullName { get; set; }
+    }
+
+    public class LoginRequest 
     {
         public string UserName { get; set; }
         public string Password { get; set; }
-    }
-
-    public class LoginRequest : CreateAccountRequest
-    {
-
     }
 
     public class TokenResponse

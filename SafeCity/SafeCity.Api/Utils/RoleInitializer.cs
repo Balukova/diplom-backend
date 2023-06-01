@@ -15,6 +15,18 @@ namespace SafeCity.Api.Utils
             {
                 await roleManager.CreateAsync(new IdentityRole<int>(UserRoles.Admin));
             }
+
+            string adminName = "Admin";
+            string adminPassword = "Admin.01";
+            if (await userManager.FindByNameAsync(adminName) == null)
+            {
+                AppUser admin = new AppUser { UserName = adminName };
+                IdentityResult result = await userManager.CreateAsync(admin, adminPassword);
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(admin, UserRoles.Admin);
+                }
+            }
         }
     }
 }

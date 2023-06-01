@@ -43,9 +43,9 @@ builder.Services
         {
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidAudience = "SafeCityContext",
-            ValidIssuer = "SafeCityContext",
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("SafeCityContext")),
+            ValidAudience = "SafeCityContextSafeCityContext",
+            ValidIssuer = "SafeCityContextSafeCityContext",
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("SafeCityContextSafeCityContext")),
             //ValidateLifetime = true,
             //ClockSkew = TimeSpan.FromHours(720)
         };

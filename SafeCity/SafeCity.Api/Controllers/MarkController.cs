@@ -15,6 +15,7 @@ using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using System.Data;
 
+
 namespace SafeCity.Api.Controllers
 {
     [Authorize]
@@ -22,26 +23,21 @@ namespace SafeCity.Api.Controllers
     [ApiController]
     public class MarkController : ControllerBase
     {
-        private readonly SafeCityContext _context;
+        public readonly SafeCityContext _context;
 
         public MarkController(SafeCityContext context)
         {
             _context = context;
         }
 
-        [HttpGet("GetMarks")]
+        [HttpPost("GetMarks")]
         public async Task<ActionResult<IEnumerable<MarkEntity>>> GetMarks(GetMarksRequest request)
         {
-            if (_context.Marks == null)
-            {
-                return NotFound();
-            }
             var currentTime = DateTime.UtcNow;
-            return await _context.Marks
-                .Where(x => x.CreatedTime.AddHours(8) < currentTime 
-                        && x.Status == MarkStatus.Active 
-                        && CalculateDistance(request.Latitude, request.Longitude, x.Latitude, x.Longitude) <= request.Radius)
-                .ToListAsync();
+            return (await _context.Marks
+                .Where(x => x.CreatedTime.AddHours(8) > currentTime
+                        && x.Status == MarkStatus.Active)
+                .ToListAsync()).Where(x => CalculateDistance(request.Latitude, request.Longitude, x.Latitude, x.Longitude) <= request.Radius).ToList();
         }
 
 
@@ -70,7 +66,7 @@ namespace SafeCity.Api.Controllers
             {
                 return NotFound();
             }
-            if(markEntity.UserId != userId)
+            if (markEntity.UserId != userId)
             {
                 return BadRequest("You dont have permissions!");
             }
@@ -82,23 +78,39 @@ namespace SafeCity.Api.Controllers
             return Ok();
         }
 
-        private double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+        private double CalculateDistance(double lat1, double lon1, double lat2, double lon2, char unit = 'K')
         {
-            var dLat = ToRadians(lat2 - lat1);
-            var dLon = ToRadians(lon2 - lon1);
-
-            lat1 = ToRadians(lat1);
-            lat2 = ToRadians(lat2);
-
-            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                    Math.Sin(dLon / 2) * Math.Sin(dLon / 2) * Math.Cos(lat1) * Math.Cos(lat2);
-            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-            return 6371.0 * c; // Radius of earth in Km
+            if ((lat1 == lat2) && (lon1 == lon2))
+            {
+                return 0;
+            }
+            else
+            {
+                double theta = lon1 - lon2;
+                double dist = Math.Sin(deg2rad(lat1)) * Math.Sin(deg2rad(lat2)) + Math.Cos(deg2rad(lat1)) * Math.Cos(deg2rad(lat2)) * Math.Cos(deg2rad(theta));
+                dist = Math.Acos(dist);
+                dist = rad2deg(dist);
+                dist = dist * 60 * 1.1515;
+                if (unit == 'K')
+                {
+                    dist = dist * 1.609344;
+                }
+                else if (unit == 'N')
+                {
+                    dist = dist * 0.8684;
+                }
+                return (dist);
+            }
         }
 
-        private double ToRadians(double angle)
+        private double deg2rad(double deg)
         {
-            return Math.PI * angle / 180.0;
+            return (deg * Math.PI / 180.0);
+        }
+
+        private double rad2deg(double rad)
+        {
+            return (rad / Math.PI * 180.0);
         }
     }
 
