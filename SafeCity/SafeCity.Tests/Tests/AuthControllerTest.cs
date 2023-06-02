@@ -6,8 +6,9 @@ using SafeCity.Api.Entity;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 
-namespace SafeCity.Api.Tests
+namespace SafeCity.Tests
 {
     public class AuthControllerTests
     {
