@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using SafeCity.Api.Entity;
+using SafeCity.Api.Services;
 using SafeCity.Api.Utils;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -14,18 +15,20 @@ namespace SafeCity.Api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly SignInManager<AppUser> _signInManager;
+        private readonly AuthService _authService;
         private readonly UserManager<AppUser> _userManager;
 
-        public AuthController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+        public AuthController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, AuthService authService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _authService = authService;
         }
 
 
         [HttpPost]
         [Route("Login/CreateAccount")]
-        public async Task<IActionResult> SendOtpOnPhone(CreateAccountRequest request)
+        public async Task<IActionResult> CreateAccount(CreateAccountRequest request)
         {
             var user = await _userManager.FindByNameAsync(request.UserName);
 
@@ -58,7 +61,7 @@ namespace SafeCity.Api.Controllers
             if (isValidPassword)
             {
                 await _signInManager.SignInAsync(user, isPersistent: false);
-                JwtSecurityToken token = await GetToken(user);
+                JwtSecurityToken token = await _authService.GetToken(user);
                 return Ok(new TokenResponse
                 {
                     Token = new JwtSecurityTokenHandler().WriteToken(token),
@@ -69,34 +72,6 @@ namespace SafeCity.Api.Controllers
             {
                 return BadRequest("Invalid passsword");
             }
-        }
-
-
-        private async Task<JwtSecurityToken> GetToken(AppUser user)
-        {
-            var userRoles = await _userManager.GetRolesAsync(user);
-            var authClaims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                };
-            foreach (var userRole in userRoles)
-            {
-                authClaims.Add(new Claim(ClaimTypes.Role, userRole));
-            }
-
-            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("SafeCityContextSafeCityContext"));
-
-            var token = new JwtSecurityToken(
-                issuer: "SafeCityContextSafeCityContext",
-                audience: "SafeCityContextSafeCityContext",
-                expires: DateTime.Now.AddHours(720),
-                claims: authClaims,
-                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-                );
-
-            return token;
         }
 
     }

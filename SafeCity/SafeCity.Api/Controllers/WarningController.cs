@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SafeCity.Api.Data;
 using SafeCity.Api.Entity;
+using SafeCity.Api.Services;
 using SafeCity.Api.Utils;
 
 namespace SafeCity.Api.Controllers
@@ -11,27 +12,25 @@ namespace SafeCity.Api.Controllers
     [ApiController]
     public class WarningController : ControllerBase
     {
-        private readonly SafeCityContext _context;
+        private readonly WarningService _warningService;
 
-        public WarningController(SafeCityContext context)
+        public WarningController(WarningService warningService)
         {
-            _context = context;
+            _warningService = warningService;
         }
 
         [Authorize(Roles = UserRoles.Admin)]
         [HttpGet("GetWarnings")]
         public async Task<ActionResult<IEnumerable<WarningEntity>>> GetWarnings()
         {
-            return await _context.Warnings.ToListAsync();
+            return Ok(await _warningService.GetWarnings());
         }
 
         [Authorize(Roles = UserRoles.Client)]
         [HttpPost("CreateWarning")]
         public async Task<ActionResult<WarningEntity>> CreateWarning(WarningEntity warningEntity)
         {
-            _context.Warnings.Add(warningEntity);
-            await _context.SaveChangesAsync();
-
+            await _warningService.CreateWarning(warningEntity);
             return Ok();
         }
     }

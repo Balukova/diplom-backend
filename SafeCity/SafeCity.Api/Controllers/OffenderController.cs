@@ -8,6 +8,7 @@ using FaceRecognitionDotNet;
 using System.Drawing;
 using Newtonsoft.Json;
 using System.Net;
+using SafeCity.Api.Services;
 
 namespace SafeCity.Api.Controllers
 {
@@ -16,10 +17,12 @@ namespace SafeCity.Api.Controllers
     public class OffenderController : ControllerBase
     {
         private readonly SafeCityContext _context;
+        private readonly OffenderService _offenderService;
 
-        public OffenderController(SafeCityContext context)
+        public OffenderController(SafeCityContext context, OffenderService offenderService)
         {
             _context = context;
+            _offenderService = offenderService;
         }
 
         [Authorize]
@@ -34,16 +37,7 @@ namespace SafeCity.Api.Controllers
         [HttpPost("FindOffenderByImage")]
         public async Task<ActionResult<List<OffenderEntity>>> FindOffenderByImage(IFormFile imageFile)
         {
-            var faceRecognition = FaceRecognition.Create("Models");
-
-            using var ms = new MemoryStream();
-            await imageFile.CopyToAsync(ms);
-            var imageBytes = ms.ToArray();
-            using var imageStream = new MemoryStream(imageBytes);
-            var bitmap = new Bitmap(imageStream);
-            var image = FaceRecognition.LoadImage(bitmap);
-
-            IEnumerable<FaceEncoding> faceEncodings = faceRecognition.FaceEncodings(image);
+            IEnumerable<FaceEncoding> faceEncodings = await _offenderService.GetFaceEncodings(imageFile);
 
             List<OffenderEntity> result = new List<OffenderEntity>();
             if (faceEncodings.Any())
@@ -64,20 +58,11 @@ namespace SafeCity.Api.Controllers
             return Ok(result);
         }
 
-
         [Authorize(Roles = UserRoles.Admin)]
         [HttpPost("CreateOffender")]
         public async Task<ActionResult<OffenderEntity>> CreateOffender(CreateOffenderRerquest rerquest)
         {
-            var faceRecognition = FaceRecognition.Create("Models");
-
-            var webClient = new WebClient();
-            var imageBytes = await webClient.DownloadDataTaskAsync(rerquest.ImageUrl);
-            using var imageStream = new MemoryStream(imageBytes);
-            var bitmap = new Bitmap(imageStream);
-            var image = FaceRecognition.LoadImage(bitmap);
-
-            IEnumerable<FaceEncoding> faceEncodings = faceRecognition.FaceEncodings(image);
+            IEnumerable<FaceEncoding> faceEncodings = await _offenderService.GetFaceEncodings(rerquest.ImageUrl);
 
             _context.Offenders.Add(new OffenderEntity
             {
@@ -90,8 +75,6 @@ namespace SafeCity.Api.Controllers
 
             return Ok();
         }
-
-
 
         [Authorize(Roles = UserRoles.Admin)]
         [HttpDelete("DeleteOffender/{id}")]

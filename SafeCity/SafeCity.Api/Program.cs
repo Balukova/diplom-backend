@@ -9,6 +9,9 @@ using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
 using SafeCity.Api.Utils;
 using Swashbuckle.AspNetCore.Filters;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Extensions.DependencyInjection;
+using SafeCity.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +24,11 @@ builder.Services.AddDbContext<SafeCityContext>(options =>
 builder.Services.AddIdentity<AppUser, IdentityRole<int>>()
     .AddEntityFrameworkStores<SafeCityContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.AddTransient<AuthService>();
+builder.Services.AddTransient<MarkService>();
+builder.Services.AddTransient<OffenderService>();
+builder.Services.AddTransient<WarningService>();
 
 builder.Services.AddAuthorization(options =>
 {
@@ -62,6 +70,13 @@ builder.Services
                 return Task.CompletedTask;
             }
         };
+    }).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+    {
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
+        options.AccessDeniedPath = "/Home/Error";
+        //options.SlidingExpiration = true;
+        //options.ExpireTimeSpan = new TimeSpan(0, 1, 0);
     });
 
 
@@ -69,6 +84,9 @@ builder.Services.AddControllers().AddJsonOptions(x =>
 {
     x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
+builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
+builder.Services.AddControllersWithViews();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -117,7 +135,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 };
-//}
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -127,6 +144,14 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllerRoute(
+        name: "default",
+        pattern: "{controller=Home}/{action=Index}/{id?}");
+    //endpoints.MapRazorPages();
+});
 
 using (var scope = app.Services.CreateScope())
 {
