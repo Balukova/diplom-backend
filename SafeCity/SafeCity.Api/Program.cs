@@ -29,6 +29,7 @@ builder.Services.AddTransient<AuthService>();
 builder.Services.AddTransient<MarkService>();
 builder.Services.AddTransient<OffenderService>();
 builder.Services.AddTransient<WarningService>();
+builder.Services.AddTransient<UserService>();
 
 builder.Services.AddAuthorization(options =>
 {

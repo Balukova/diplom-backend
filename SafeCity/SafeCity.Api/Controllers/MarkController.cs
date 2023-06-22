@@ -23,12 +23,10 @@ namespace SafeCity.Api.Controllers
     [ApiController]
     public class MarkController : ControllerBase
     {
-        public readonly SafeCityContext _context;
         private readonly MarkService _markService;
 
-        public MarkController(SafeCityContext context, MarkService markService)
+        public MarkController(MarkService markService)
         {
-            _context = context;
             _markService = markService;
         }
 
@@ -36,26 +34,14 @@ namespace SafeCity.Api.Controllers
         public async Task<ActionResult<IEnumerable<MarkEntity>>> GetMarks(GetMarksRequest request)
         {
             var currentTime = DateTime.UtcNow;
-            return (await _context.Marks
-                .Where(x => x.CreatedTime.AddHours(8) > currentTime
-                        && x.Status == MarkStatus.Active)
-                .ToListAsync()).Where(x => _markService.CalculateDistance(request.Latitude, request.Longitude, x.Latitude, x.Longitude) <= request.Radius).ToList();
+            return Ok(await _markService.GetMarks(request, currentTime));
         }
-
 
         [HttpPost("CreateMark")]
         public async Task<ActionResult> CreateMark(CreateMarkRequest request)
         {
             int userId = User.GetClUserId();
-
-            MarkEntity markEntity = request.Adapt<MarkEntity>();
-            markEntity.UserId = userId;
-            markEntity.CreatedTime = DateTime.UtcNow;
-            markEntity.Status = MarkStatus.Active;
-
-            _context.Marks.Add(markEntity);
-            await _context.SaveChangesAsync();
-
+            await _markService.CreateMark(request, userId);
             return Ok();
         }
 
@@ -63,7 +49,7 @@ namespace SafeCity.Api.Controllers
         public async Task<IActionResult> DeleteMark(int id)
         {
             int userId = User.GetClUserId();
-            var markEntity = await _context.Marks.FindAsync(id);
+            var markEntity = await _markService.FindMark(id);
             if (markEntity == null)
             {
                 return NotFound();
@@ -73,30 +59,10 @@ namespace SafeCity.Api.Controllers
                 return BadRequest("You dont have permissions!");
             }
 
-            markEntity.Status = MarkStatus.Deleted;
-            _context.Entry(markEntity).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-
+            await _markService.DeleteMark(markEntity);
             return Ok();
         }
     }
 
-    public class GetMarksRequest
-    {
-        public double Longitude { get; set; }
-        public double Latitude { get; set; }
-        public double Radius { get; set; }
-        public MarkType Type { get; set; }
-    }
-
-    public class CreateMarkRequest
-    {
-        public double Longitude { get; set; }
-        public double Latitude { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public List<string> Images { get; set; }
-        public List<string> Videos { get; set; }
-        public MarkType Type { get; set; }
-    }
+   
 }

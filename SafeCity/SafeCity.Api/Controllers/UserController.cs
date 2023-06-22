@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SafeCity.Api.Data;
 using SafeCity.Api.Entity;
+using SafeCity.Api.Services;
 using SafeCity.Api.Utils;
 
 namespace SafeCity.Api.Controllers
@@ -17,26 +18,24 @@ namespace SafeCity.Api.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly SafeCityContext _context;
+        private readonly UserService _userService;
 
-        public UserController(SafeCityContext context)
+        public UserController(UserService userService)
         {
-            _context = context;
+            _userService = userService;
         }
 
-
-        // GET: api/AppUsers/5
         [HttpGet("GetUserInfo")]
         public async Task<ActionResult<AppUser>> GetUserInfo()
         {
             int userId = User.GetClUserId();
-            var appUser = await _context.Users.FindAsync(userId);
+            var appUser = await _userService.GetUserInfo(userId);
             if (appUser == null)
             {
                 return NotFound();
             }
             return Ok(appUser);
         }
-
     }
+
 }

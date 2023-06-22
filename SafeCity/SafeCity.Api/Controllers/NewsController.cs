@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SafeCity.Api.Data;
 using SafeCity.Api.Entity;
+using SafeCity.Api.Services;
 using SafeCity.Api.Utils;
 
 namespace SafeCity.Api.Controllers
@@ -17,27 +18,25 @@ namespace SafeCity.Api.Controllers
     [ApiController]
     public class NewsController : ControllerBase
     {
-        private readonly SafeCityContext _context;
+        private readonly NewsService _newsService;
 
-        public NewsController(SafeCityContext context)
+        public NewsController(NewsService newsService)
         {
-            _context = context;
+            _newsService = newsService;
         }
 
         [Authorize(Roles = UserRoles.AdminClient)]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<NewsEntity>>> GetNews()
         {
-            return await _context.News.ToListAsync();
+            return Ok(await _newsService.GetNews());
         }
 
         [Authorize(Roles = UserRoles.Admin)]
         [HttpPost]
         public async Task<ActionResult<NewsEntity>> PostNewsEntity(NewsEntity newsEntity)
         {
-            _context.News.Add(newsEntity);
-            await _context.SaveChangesAsync();
-
+            await _newsService.PostNewsEntity(newsEntity);
             return Ok();
         }
 
@@ -45,15 +44,13 @@ namespace SafeCity.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteNewsEntity(int id)
         {
-            var newsEntity = await _context.News.FindAsync(id);
+            var newsEntity = await _newsService.FindNewsEntity(id);
             if (newsEntity == null)
             {
                 return NotFound();
             }
 
-            _context.News.Remove(newsEntity);
-            await _context.SaveChangesAsync();
-
+            await _newsService.DeleteNewsEntity(newsEntity);
             return Ok();
         }
     }
