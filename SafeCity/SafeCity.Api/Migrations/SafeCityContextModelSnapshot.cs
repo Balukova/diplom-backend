@@ -276,7 +276,7 @@ namespace SafeCity.Api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Marks");
+                    b.ToTable("Marks", (string)null);
                 });
 
             modelBuilder.Entity("SafeCity.Api.Entity.NewsEntity", b =>
@@ -301,7 +301,7 @@ namespace SafeCity.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("News");
+                    b.ToTable("News", (string)null);
                 });
 
             modelBuilder.Entity("SafeCity.Api.Entity.OffenderEntity", b =>
@@ -330,7 +330,7 @@ namespace SafeCity.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Offenders");
+                    b.ToTable("Offenders", (string)null);
                 });
 
             modelBuilder.Entity("SafeCity.Api.Entity.OffenderMarkEntity", b =>
@@ -364,7 +364,7 @@ namespace SafeCity.Api.Migrations
 
                     b.HasIndex("OffenderId");
 
-                    b.ToTable("FoundedOffenders");
+                    b.ToTable("FoundedOffenders", (string)null);
                 });
 
             modelBuilder.Entity("SafeCity.Api.Entity.WarningEntity", b =>
@@ -391,7 +391,7 @@ namespace SafeCity.Api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Warnings");
+                    b.ToTable("Warnings", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>

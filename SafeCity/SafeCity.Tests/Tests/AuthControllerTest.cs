@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
+using SafeCity.Api.Services;
 
 namespace SafeCity.Tests
 {
@@ -22,8 +23,9 @@ namespace SafeCity.Tests
             _mockUserManager = new Mock<UserManager<AppUser>>(userStoreMock.Object, null, null, null, null, null, null, null, null);
             var contextAccessor = new Mock<IHttpContextAccessor>();
             var userPrincipalFactory = new Mock<IUserClaimsPrincipalFactory<AppUser>>();
+            var _mockAuthService = new Mock<AuthService>();
             _mockSignInManager = new Mock<SignInManager<AppUser>>(_mockUserManager.Object, contextAccessor.Object, userPrincipalFactory.Object, null, null, null, null);
-            _controller = new AuthController(_mockUserManager.Object, _mockSignInManager.Object);
+            _controller = new AuthController(_mockUserManager.Object, _mockSignInManager.Object, _mockAuthService.Object);
         }
 
         [Fact]
@@ -36,7 +38,7 @@ namespace SafeCity.Tests
             _mockUserManager.Setup(x => x.AddToRoleAsync(It.IsAny<AppUser>(), It.IsAny<string>())).ReturnsAsync(IdentityResult.Success);
 
 
-            var result = await _controller.SendOtpOnPhone(request);
+            var result = await _controller.CreateAccount(request);
 
             Assert.IsType<OkResult>(result);
         }

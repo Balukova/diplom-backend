@@ -29,6 +29,10 @@ namespace SafeCity.Api.Controllers
         [HttpGet("FindOffenders/{name}")]
         public async Task<ActionResult<List<OffenderEntity>>> FindOffenders(string name)
         {
+            if (name == "" || name == null || name == "all")
+            {
+                return Ok(await _context.Offenders.ToListAsync());
+            }
             var offenders = await _context.Offenders.Where(x => x.Name.Contains(name)).ToListAsync();
             return Ok(offenders);
         }

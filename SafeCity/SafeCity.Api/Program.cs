@@ -30,6 +30,7 @@ builder.Services.AddTransient<MarkService>();
 builder.Services.AddTransient<OffenderService>();
 builder.Services.AddTransient<WarningService>();
 builder.Services.AddTransient<UserService>();
+builder.Services.AddTransient<NewsService>();
 
 builder.Services.AddAuthorization(options =>
 {
